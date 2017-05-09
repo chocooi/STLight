@@ -1,0 +1,22 @@
+<p class= "deck">
+  this is a demo using <a href = "http://channels.readthedocs.org/en/latest/">
+  django channels </a> to implement a simple webSocket-based chat server.
+  you can see the <a href="https://github.com/jacobian/channels-example">
+    code on GitHub</a>, or try the app:
+
+<p class = "quiet">
+  or, you can visit <code>{{request.scheme }}:// {{request.get_host}}/chat/any-path-you-want</code>
+  to create a arbitrary room or join one whose name you know.
+</p>
+<script>
+ws = new WebSocket((window.location.protocol == 'http:' ? 'ws://' : 'wss://') +  window.location.host + '/')
+
+// ws.onmessage를 통해 메시지를 받으면 알림
+ws.onmessage = function(message) {
+  alert(message.data);
+}
+// ws.onpen을 통해 소켓이 열리면 메시지를 보냄
+ws.onopen = function() {
+  ws.send('Hello, world');
+}
+</script>

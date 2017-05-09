@@ -1,0 +1,96 @@
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+<h1>ST_Light GEO-Test</h1>
+<h2> Command History</h2>
+<td>
+  <input type=button value="StreetLight"  OnClick="window.location='/STLight/'">
+  <input type=button value="Repeater"  OnClick="window.location='/SetRepeater/'">
+  <input type=button value="CommandHistory"  OnClick="window.location='/CommandHistory/'">
+  <p>
+</td>
+<script>
+function winpopupCell()
+{
+  window.open("/cellSetting",'popup','width=220,height=270,top=20,left=50');
+
+  return false;
+}
+</script>
+<h2>Repeater Table</h2>
+<table cellspacing=10 width=700 >
+  <tr>
+    <td>Device Code: <input type=textarea value="" >
+      <td>Zone: <input type=textarea value="" ></td>
+    </td>
+  </tr>
+    <td>날짜: <input type=textarea value="" ></td>
+</table>
+<td>
+  <input type=button value="Cell Control"  OnClick="winpopupCell()">
+</td>
+<tr> <td>
+<table cellspacing=1 width=900 border=1>
+<tr>
+  <td width=50><p align=center>NO</p></td>
+  <td width=100><p align=center>Device Code</p></td>
+    <td width=200><p align=center>Zone</p></td>
+  <td width=320><p align=center>Luminous</p></td>
+  <td width=50><p align=center>명령시간</p></td>
+  <td width=50><p align=center>수신시간</p></td>
+  <td width=50><p align=center>EOR 중계기</p></td>
+</tr>
+{% if findZone %}
+{% endif %}
+{% if RepeaterVal %}
+  <ul>
+      {% for boardRow in RepeaterVal %}
+      <tr>
+      <td width=50><p align=center>{{ boardRow.id }}</p></td>
+      <td width=100><p align=center>{{ boardRow.re_code }}</p></td>
+      <td width=100><p align=center>{{ boardRow.RouteTable }}</p></td>
+      <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+      <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+      <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+      <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+      </tr>
+      {% endfor %}
+  </ul>
+{% else %}
+  <p>No Data.</p>
+  <tr>
+  <td width=50, height =20><p align=center>{{ boardRow.id }}</p></td>
+  <td width=100><p align=center>{{ boardRow.re_code }}</p></td>
+  <td width=100><p align=center>{{ boardRow.RouteTable }}</p></td>
+  <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+  <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+  <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+  <td width=100><p align=center>{{ boardRow.re_loc }}</p></td>
+  </tr>
+{% endif %}
+
+</table>
+{% for page in totalPageList %}
+    <a href="/listSpecificPageWork?current_page={{page}}" >
+    [
+    {% ifequal page current_page %}
+        <b>
+    {% endifequal %}
+    {{page}}
+
+    {% ifequal page current_page  %}
+        </b>
+    {% endifequal %}
+    ]
+{% endfor %}
+</td> </tr>
+</table>
+<table width=700>
+      <tr>
+          <td><input type=button value="Input"  OnClick="window.location='/inputRepeater/'">    </td>
+          <td><form name=searchf method=post action="/SearchLoc/">
+            {% csrf_token %}
+              <p align=right>Location: <input type=text name=searchZone size=18  maxlength=50>
+              <input type=submit value="Search"></p>
+            </form>
+          </td>
+      </tr>
+  </table>

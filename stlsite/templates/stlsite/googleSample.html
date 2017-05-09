@@ -1,0 +1,183 @@
+<!-- googlemap sample입니다. 나중에 수정 할 예정입니다  -->
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
+<script type="text/javascript">
+	var map ;
+	var myOptions;
+	var O_mapMaker = false;
+	var O_zoomControl = false;
+	var O_streetViewControl = false;
+	var O_disableDoubleClickZoom = false;
+	var O_draggable = false;
+	var O_scrollwheel = false;
+	var O_mapTypeControl = false;
+	var O_scaleControl = false;
+	var O_rotateControl = false;
+	var O_panControl = false;
+	var O_center = new google.maps.LatLng(37.6098098499088, 127.02985600018314);
+	var O_zoom = 18;
+	window.onload = function() {
+		initialize();
+
+		display_button("mapMaker", "Map Marker");
+		if(O_mapMaker){buttoncolor("mapMaker","1");}else{buttoncolor("mapMaker","2");}
+
+		display_button("zoomControl", "Zoom Panel");
+		if(O_zoomControl){buttoncolor("zoomControl","1");}else{buttoncolor("zoomControl","2");}
+
+		display_button("streetViewControl", "StreetView Control");
+		if(O_streetViewControl){buttoncolor("streetViewControl","1");}else{buttoncolor("streetViewControl","2");}
+
+		display_button("disableDoubleClickZoom", "DoubleClick Zoom");
+		if(O_disableDoubleClickZoom){buttoncolor("disableDoubleClickZoom","1");}else{buttoncolor("disableDoubleClickZoom","2");}
+
+		display_button("draggable", "Drag Move");
+		if(O_draggable){buttoncolor("draggable","1");}else{buttoncolor("draggable","2");}
+
+		display_button("scrollwheel", "Wheel Use");
+		if(O_scrollwheel){buttoncolor("scrollwheel","1");}else{buttoncolor("scrollwheel","2");}
+
+		display_button("mapTypeControl", "MapType Control");
+		if(O_mapTypeControl){buttoncolor("mapTypeControl","1");}else{buttoncolor("mapTypeControl","2");}
+
+		display_button("scaleControl", "Scale Control");
+		if(O_scaleControl){buttoncolor("scaleControl","1");}else{buttoncolor("scaleControl","2");}
+
+		display_button("rotateControl", "Rotate Control");
+		if(O_rotateControl){buttoncolor("rotateControl","1");}else{buttoncolor("rotateControl","2");}
+
+		display_button("panControl", "Pan Control");
+		if(O_panControl){buttoncolor("panControl","1");}else{buttoncolor("panControl","2");}
+	}
+	function buttonclick(obj){
+		var id = obj.id.substr(0,obj.id.length-1);
+		var id_result = obj.id.substr (obj.id.length-1,1);
+		O_zoom = map.getZoom();
+		O_center = map.getCenter();
+		switch(id){
+			case "mapMaker" :  O_mapMaker = buttoncolor(id,id_result); break;
+			case "zoomControl" : O_zoomControl = buttoncolor(id,id_result); break;
+			case "streetViewControl" : O_streetViewControl = buttoncolor(id,id_result); break;
+			case "disableDoubleClickZoom" : O_disableDoubleClickZoom = buttoncolor(id,id_result); break;
+			case "draggable" : O_draggable = buttoncolor(id,id_result); break;
+			case "scrollwheel" : O_scrollwheel = buttoncolor(id,id_result); break;
+			case "mapTypeControl" : O_mapTypeControl = buttoncolor(id,id_result); break;
+			case "scaleControl" : O_scaleControl = buttoncolor(id,id_result); break;
+			case "rotateControl" : O_rotateControl = buttoncolor(id,id_result); break;
+			case "panControl" : O_panControl = buttoncolor(id,id_result); break;
+		}
+		map.setOptions(optionSetting()) ;
+
+	}
+	function initialize() {
+		myOptions  = optionSetting();
+		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+		google.maps.event.addListener(map,'center_changed',function(){
+			setTimeout(center_changed_event,100);
+		});
+		google.maps.event.addListener(map,'zoom_changed',function(){
+			setTimeout(zoom_changed_event,100);
+		});
+	}
+	function zoom_changed_event(){
+		var _data = map.getZoom();
+		document.getElementById('zoom_txt').value = _data;
+	}
+	function center_changed_event(){
+		var _data = map.getCenter();
+		document.getElementById('lat_txt').value=_data.lat();
+		document.getElementById('lng_txt').value=_data.lng();
+	}
+	function optionSetting(){
+		var data = {
+			zoom: O_zoom,
+			center:  O_center,
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapMaker : O_mapMaker,
+			zoomControl : O_zoomControl,
+			streetViewControl : O_streetViewControl,
+			disableDoubleClickZoom : O_disableDoubleClickZoom,
+			draggable  : O_draggable,
+			scrollwheel : O_scrollwheel,
+			mapTypeControl : O_mapTypeControl,
+			scaleControl : O_scaleControl,
+			rotateControl : O_rotateControl,
+			panControl : O_panControl
+		};
+		return data;
+	}
+
+	function buttoncolor(id,id_result){
+		var getvalue;
+		if(id_result == "1"){
+			document.getElementById(id+"1").style.color = "#fff";
+			document.getElementById(id+"1").style.backgroundColor = "#000";
+			document.getElementById(id+"2").style.color = "#000";
+			document.getElementById(id+"2").style.backgroundColor = "#fff";
+			getvalue = true;
+		}else{
+			document.getElementById(id+"1").style.color = "#000";
+			document.getElementById(id+"1").style.backgroundColor = "#fff";
+			document.getElementById(id+"2").style.color = "#fff";
+			document.getElementById(id+"2").style.backgroundColor = "#000";
+			getvalue = false;
+		}
+		return getvalue;
+	}
+	function display_button(div_id,div_name){
+		var div = document.createElement('div');
+		div.id = div_id;
+		document.getElementById("pannel").appendChild(div);
+		document.getElementById(div_id).innerHTML += "<table cellpadding=1 cellspacing=0 border=0 width=250px><tr><td>&nbsp;<SPAN style='font-size:13px'>"+div_name+ "</SPAN></td><td width=100px>" + "<input id='"+div_id+"1' type=button value=On style='border-style:solid;border-color:#000;background-color:#000;color:#FFF;width:50px;' onclick='buttonclick(this)' ><input id='"+div_id+"2' type=button value=Off style='border-style:solid;border-color:#000;background-color:#FFF;color:#000;width:50px;' onclick='buttonclick(this)'></td></table>";
+	}
+	var markersArray = [];
+	function check_marker(){
+		var marker = new google.maps.Marker({
+			position : map.getCenter(),
+			map : map,
+			title : map.getCenter()+''
+		});
+		markersArray.push(marker);
+	}
+	function clear_marker(){
+		if(markersArray){
+			for(i in markersArray){
+				markersArray[i].setMap(null);
+			}
+		}
+	}
+</script>
+<table cellpadding=0 cellspacing=1 border=0 style="background-color:#000;">
+	<tr>
+		<td style="background-color:#FFF">
+			<div id="map_canvas" style="width:300px;height:300px;"></div>
+		</td>
+		<td  style="background-color:#FFF">
+			<div id="pannel"></div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=2  style="background-color:#FFF">
+			<table cellpadding=0 cellspacing=0 border=0>
+				<tr>
+					<td>
+						<table cellpadding=0 cellspacing=0 border=0>
+						<tr><td style='font-size:13px' align=center>Lat</td><td width=20px></td><td><input type=text id=lat_txt style='border-style:solid;border-color:#000;width:120px'></td></tr>
+						<tr><td style='font-size:13px' align=center>Lng</td><td width=20px></td><td><input type=text id=lng_txt style='border-style:solid;border-color:#000;width:120px'></td></tr>
+						<tr><td style='font-size:13px' align=center>Zoom</td><td width=20px></td><td><input type=text id=zoom_txt style='border-style:solid;border-color:#000;width:120px'></td></tr>
+						</table>
+					</td>
+					<td width=10px>
+					</td>
+					<td>
+						<table cellpadding=0 cellspacing=0 border=0>
+							<tr><td><input type="button" value="Marking" onclick="check_marker()" style='border-style:solid;border-color:#000;width:100px;'></td></tr>
+							<tr><td height=10px></td></tr>
+							<tr><td align='center'><input type="button" value="Clear" onclick="clear_marker()" style='border-style:solid;border-color:#000;width:100px;'></td></tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>

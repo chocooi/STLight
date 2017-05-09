@@ -1,0 +1,164 @@
+<html>
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+<head>
+</head>
+<body onload="InitTable()">
+  <div class="page-header">
+    <P>
+      <h1 align=center>StreetLight Status</h1>
+  </div>
+  <p>
+    <table cellspacing=1 width=700 border=1 id="statusTable"align=center>
+      <TR bgcolor =orange width=700>
+  			<TD colspan = 5><p align=center>가로등 상태 <img width="20px" height="20px" onclick = "SetRepeater()"></TD>
+  		</TR>
+      <TR>
+  			<TD width=50 ><p align=center>No</TD>
+  			<TD width=100><p align=center>Device code</TD>
+  			<TD width=100><p align=center>위치</TD>
+  			<TD width=100><p align=center>Zone</TD>
+  			<TD width=100><p align=center>조도 <img width="20px" height="20px"  onclick = "ChangeStatus()"></TD>
+
+  		</TR>
+      <tr>
+        <td width=50 ><p align=center>{{STL.id}}</p></td>
+        <td width=100><p align=center>{{STL.code}}</p></td>
+        <td width=100><p align=center>{{STL.loc}}</p></td>
+        <td width=100><p align=center>{{STL.zone.zoneName}}</p></td>
+        <td width=100><p align=center>{{STL.luminous }}% <button onclick= "ChangeLuminous()">변경</button></p></td>
+      </tr>
+    </table>
+    <br><br><br>
+    <table cellspacing=1 width=700 border=1 id="envTable" align=center>
+      <TR bgcolor =orange width=700>
+        <TD colspan = 5><p align=center>주변 환경  </TD>
+      </TR>
+      <TR>
+        <TD width=50 ><p align=center>환경조도</TD>
+        <TD width=100><p align=center>움직임</TD>
+        <TD width=100><p align=center>체크시간</TD>
+
+      </TR>
+      <tr>
+        <td width=50 ><p align=center>NULL</p></td>
+        <td width=100><p align=center>{{STL.ltAuto}}</p></td>
+        <td width=100><p align=center>{{STL.sTLMonitorTime}}</p></td>
+      </tr>
+    </table>
+    <br>
+    <form name=searchf action ="" method=post onsubmit="return frmsubmit();">
+        {% csrf_token %}
+        <input type="hidden" name = "locked" id = "locked">
+        <input type="hidden" name = "repeater" id = "repeater">
+        <input type="hidden" name = "luminous" id = "luminous">
+    <p align=center>
+    <input type= "submit" align = "center" value = "Save" ></input>
+    <input type= "button" align = "center" value = "Close"  onclick = "CloseWindow()" ></input>
+  </form>
+</body>
+<script>
+function Checkvalue() //값 디버깅 하기 위한 함수
+{
+  locked    = document.searchf.locked.value;
+  repeater  = document.searchf.repeater.value;
+  luminous  = document.searchf.luminous.value;
+  alert(locked);
+  alert(repeater);
+  alert(luminous);
+}
+function CloseWindow(){
+  this.close();
+}
+function ChangeLuminous()
+{
+  var stable = document.getElementById("statusTable");
+  stable.rows[2].cells[4].innerHTML = "<p align=center><form name=frm><input type=\"text\" name = \"lum\" size = 3 maxlength = 2 onkeypress ='return event.charCode >= 48 && event.charCode <= 57' >%</TD> <button onclick= \"getLum()\">입력</button>";
+}
+function getLum()
+{
+  var stable = document.getElementById("statusTable");
+  document.searchf.luminous.value =  document.frm.lum.value;
+  stable.rows[2].cells[4].innerHTML ="<p align=center>"+document.searchf.luminous.value+" %</td> <button onclick= \"ChangeLuminous()\">변경</button>";
+}
+var isLock = "{{STL.ltAuto}}";
+var isRepeater = "{{STL.IsRepeater}}";// 가로등 중계기를 불러오는 부분이 필요
+document.searchf.locked.value = "{{STL.ltAuto}}";
+document.searchf.repeater.value = "{{STL.IsRepeater}}";
+document.searchf.luminous.value = "{{STL.luminous}}";
+function SetRepeater()
+{
+  var stable = document.getElementById("statusTable");
+  if(isRepeater == "off")//unLocked
+  {
+    stable.rows[0].cells[0].innerHTML = "<p align=center>가로등 상태 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzdVZXd1VfQXNzdWs\" width=\"20px\" height=\"20px\"  onclick = \"SetRepeater()\"></TD>";
+    isRepeater = "on"
+    document.searchf.repeater.value = "on"
+  }
+  else
+  {
+    stable.rows[0].cells[0].innerHTML = "<p align=center>가로등 상태 <img width=\"20px\" height=\"20px\"  onclick = \"SetRepeater()\"></TD>";
+    isRepeater = "off"
+    document.searchf.repeater.value = "off"
+  }
+}
+function ChangeStatus()
+{
+  var stable = document.getElementById("statusTable");
+  var envtable = document.getElementById("envTable");
+  if(isLock == "Locked")//unLocked
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzX1V1dURHYkZsanc\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+    isLock = "UnLocked"
+    document.searchf.locked.value = "UnLocked"
+    envtable.rows[2].cells[1].innerHTML = "<p align=center>UnLocked"
+  }
+
+  else if(isLock == "UnLocked")//auto
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzZGNLSjNtSjZGOTQ\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+    isLock = "Auto"
+    document.searchf.locked.value = "Auto"
+    envtable.rows[2].cells[1].innerHTML = "<p align=center>Auto"
+    //상태 값 저장 할 필요 있음, submit을 통해서 상태 값 전달 해야됨
+  }
+  else//locked
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzcGNOd1ZxOUtCYXM\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+    isLock = "Locked"
+    document.searchf.locked.value = "Locked"
+    envtable.rows[2].cells[1].innerHTML = "<p align=center>Locked"
+  }
+}
+function frmsubmit(){
+  if (locked.value == "")
+  {
+    return false;
+  }
+  //self.close();
+  return true;
+}
+function InitTable(){
+  var stable = document.getElementById("statusTable");
+  if(isLock == "UnLocked")//unLocked
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzX1V1dURHYkZsanc\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+  }
+
+  else if(isLock == "Auto")//auto
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzZGNLSjNtSjZGOTQ\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+  }
+  else//locked
+  {
+    stable.rows[1].cells[4].innerHTML = "<p align=center>조도 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzcGNOd1ZxOUtCYXM\" width=\"20px\" height=\"20px\"  onclick = \"ChangeStatus()\"></TD>";
+  }
+  if(isRepeater == "on")//unLocked
+  {
+    stable.rows[0].cells[0].innerHTML = "<p align=center>가로등 상태 <img src=\"https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzdVZXd1VfQXNzdWs\" width=\"20px\" height=\"20px\"  onclick = \"SetRepeater()\"></TD>";
+  }
+  else {
+      stable.rows[0].cells[0].innerHTML = "<p align=center>가로등 상태 <img width=\"20px\" height=\"20px\"  onclick = \"SetRepeater()\"></TD>";
+  }
+}
+</script>
+</html>

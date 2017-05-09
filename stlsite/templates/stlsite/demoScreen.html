@@ -1,0 +1,1111 @@
+<html>
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+<div id="map_canvas"></div>
+<head>
+  <title>STreetLight </title>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+</head>
+<style type "text/css">
+#container  { background-color:#F0F0F0; width:1800px; margin:0 auto;  }
+#header   { background-color:#908886; height:100px; }
+#content  { background-color:#444444; float:left; width:900px; height:250px; }
+#table  { background-color:#F5F5F5; float:left; width:900px; height:550px;overflow-y:scroll}
+#title  { background-color:#F5F5F5; float:left; width:800px; height:100px; }
+#Menu  { background-color:#708877; float:left; width:900px; height:100px; }
+#Menu2  { background-color:#004422; float:left; width:800px; height:50px; }
+#sideinfo  { background-color:#DCDAD9; float:right; width:900px; height:400px; }
+#footer   { background-color:#555555; clear:both; height:100px; }
+#map{
+  height:100%;
+}
+</style>
+<style type="text/css">
+    #map, html, body {
+        padding: 0;
+        margin: 0;
+        width: 960px;
+        height: 700px;
+    }
+
+    #panel {
+        width: 200px;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        float: right;
+        margin: 10px;
+    }
+
+    #color-palette {
+        clear: both;
+    }
+
+    .color-button {
+        width: 14px;
+        height: 14px;
+        font-size: 0;
+        margin: 2px;
+        float: left;
+        cursor: pointer;
+    }
+
+    #delete-button {
+        margin-top: 5px;
+    }
+</style>
+<STYLE type="text/css">
+
+/*	start styles for the ContextMenu	*/
+.context_menu{
+	background-color:white;
+	border:1px solid gray;
+}
+.context_menu_item{
+	padding:3px 6px;
+}
+.context_menu_item:hover{
+	background-color:#CCCCCC;
+}
+.context_menu_separator{
+	background-color:gray;
+	height:1px;
+	margin:0;
+	padding:0;
+}
+/*	end styles for the ContextMenu	*/
+</STYLE>
+<BODY onload="initMap()">
+
+<div id="container">
+<div id="title"><h1>StreetLight Control</h1></div>
+<div id="Menu">
+  <!--<input style="margin-left: 50px; margin-top: 10px; WIDTH: 120pt; HEIGHT: 60pt" type=button value="STLight"  OnClick="window.location='/STLight/'">
+  #<input style="margin-left: 20px; WIDTH: 120pt; HEIGHT: 60pt"  type=button value="Repeater"  OnClick="window.location='/SetRepeater/'">
+  <input style="margin-left: 20px; WIDTH: 120pt; HEIGHT: 60pt"  type=button value="Monitoring"  OnClick="window.location='/Monitoring/'">
+  <input style="margin-left: 20px; WIDTH: 120pt; HEIGHT: 60pt"  type=button value="CommandHistory"  OnClick="window.location='/CommandHistory/'">-->
+</div>
+
+<div id="Menu2">
+  <!-- 라디오버튼을 통해 각각의 아이콘 또는 Zone, Cell을 표시 하기-->
+  <form name = "checkForm" style = "height: 25pt">
+    <input type="checkbox" name="chk_info" onclick = "CheckBoxChecked(this,'ST')"checked >가로등
+    <input type="checkbox" name="chk_info" onclick = "CheckBoxChecked(this,'RP')" >중계기
+    <input type="checkbox" name="chk_info" onclick = "CheckBoxChecked(this,'ZN')" >Zone
+    <input type="checkbox" name="chk_info" onclick = "CheckBoxChecked(this,'CL')" >Cell
+    <input type="button"   name="btn_info" onclick = "CheckBoxChecked(this,'RS')" value="지도설정 초기화" margin-bottom = "100pt">
+    <div id="color-palette"></div>
+
+  </form>
+<div style="width: 800px; height: 570px; float:left;" id="map" ></div>
+</div>
+
+<div id="content">
+      <p><h2>StreetLight Table</h2>
+
+   <div id="table">
+
+   <table cellspacing=1 width=850 border=1 id="zoneTable">
+   <tr>
+     <form name=searchf method=post action="/changeTable/">
+       {% csrf_token %}
+     <td width=100 rowspan="2"><p align=center>Zone</p></td>
+     <td width=80 colspan = "2" ><p align=center>Lighter</p></td>
+     <td width=100 rowspan="2" ><p align=center>Status(%)</p></td>
+     <td width=100 rowspan="2"><p align=center>on/off</p></td>
+     <td width=50 rowspan="2"><p align=center>Lock</p></td>
+     <td width=300 colspan = "2"><p align=center>Location</p></td>
+     <td width=100 colspan = "2"><p align=center>AP</p></td>
+   </tr>
+    <tr>
+   <td width=40 ><p align=center>No</p></td>
+   <td width=40 ><p align=center>ID</p></td>
+   <td width=150 ><p align=center>X (latitude)</p></td>
+   <td width=150 ><p align=center>Y (longitude)</p></td>
+   <td width=50 ><p align=center>Name</p></td>
+   <td width=50 ><p align=center>Status</p></td>
+    </tr>
+    <tr bgcolor="#999">
+      <td width=100 ><p align=center>All</p></td>
+      <td width=50 ><p align=center></p></td>
+      <td width=100 ><p align=center></p></td>
+      <td width=50 ><p align=center><input style="background-color: #999; border:#999; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return numkeyCheck(event)'></p></td>
+      <td width=50 ><p align=center><input style="background-color: #999; border:#999; text-align: center; font-size:12pt" name="switch" type="button" id=-9 onclick = "ChangeSwitchAll(-9)" value="on">
+      <input name="switch" type="hidden" id=-9hidden value="on"></p></td></p></td>
+      <td width=50 ><p align=center></p></td>
+      <td width=50 ><p align=center></p></td>
+      <td width=50 ><p align=center></p></td>
+      <td width=50 ><p align=center></p></td>
+      <td width=50 ><p align=center></p></td>
+    </tr>
+
+       {% if Location %}
+       {% for zones in findZone %}
+          <tr bgcolor="#ddd">
+            <td width=70><p align=center>{{zones.zoneName}}</p></td>
+            <td width=45><p align=center>0</p></td>
+            <td width=50><p align=center></p></td>
+            <td width=70><p align=center><input style="background-color: #ddd; border:#ddd; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
+            <td width=50><p align=center><input style="background-color: #ddd; border:#ddd; text-align: center; font-size:12pt" type="button" id={{zones.zoneName}} onclick = "ChangeSwitch('{{zones.zoneName}}')" value="on">
+            <input name="switch" type="hidden" id={{zones.zoneName}}hidden value="on"></p></td>
+             <td width=40><p align=center></p></td>
+            <td width=120><p align=center></p></td>
+            <td width=120><p align=center></p></td>
+            <td width=45><p align=center></p></td>
+            <td width=45><p align=center></p></td>
+          </tr>
+         {% for boardRow in Location %}
+
+         {% if zones.zoneName == boardRow.zone.zoneName%}
+           <tr>
+             <td width=100 style="background-color: #fff;"><p align=center></p></td>
+             <td width=40 style="background-color: #fff;"><p align=center>{{total}}</p></td>
+             <td width=100 style="background-color: #fff;"><p align=center>{{ boardRow.code }}</p></td>
+             <td width=100 style="background-color: #fff;" ><p align=center><input style="background-color: #fff; border:#fff; text-align: center; font-size:12pt" name="status" type=text size=5 value = {{ boardRow.luminous }} maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
+
+             <td width=50 style="background-color: #fff;"><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="switch" type="button" id={{boardRow.id}} onclick = "ChangeSwitch({{boardRow.id}})" value={{boardRow.switch}}>
+             <input name="switch" type="hidden" id={{boardRow.id}}hidden value="on"></p></td></p></td>
+             {% if boardRow.ltAuto == "Locked" %}
+              <td width=50 style="background-color: #fff;"><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="lock" type="button" id={{boardRow.id}}+{{boardRow.ltAuto}} onclick = "ChangeLocked('{{boardRow.id}}+{{boardRow.ltAuto}}')" value="O">
+              <input name="lock" type="hidden" id={{boardRow.id}}+{{boardRow.ltAuto}}hidden value={{boardRow.ltAuto}}></p></td>
+             {% else %}
+              <td width=50 style="background-color: #fff;"><p align=center><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="lock" type="button" id={{boardRow.id}}+{{boardRow.ltAuto}} onclick = "ChangeLocked('{{boardRow.id}}+{{boardRow.ltAuto}}')" value="X">
+              <input name="lock" type="hidden" id={{boardRow.id}}+{{boardRow.ltAuto}}hidden value={{boardRow.ltAuto}}></p></td></p></td>
+             {% endif %}
+             <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.posX }}</p></td>
+             <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.posY }}</p></td>
+             <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.cell.cellName }}</p></td>
+             <td width=50 style="background-color: #fff;"><p align=center>Right</p></td>
+           </tr>
+
+        {% endif %}
+
+
+           {% endfor %}
+
+         {% endfor %}
+     {% else %}
+         <tr>
+           <td width=50, height = 20><p align=center></p></td>
+           <td width=80><p align=center></p></td>
+           <td width=100><p align=center></p></td>
+           <td width=100><p align=center></p></td>
+           <td width=100><p align=center>%</p></td>
+           <td width=50><p align=center></p></td>
+           <td width=150><p align=center></p></td>
+           <td width=150><p align=center></p></td>
+         </tr>
+     {% endif %}
+   </table>
+   {% for page in totalPageList %}
+       <a href="/listSpecificPageWork?current_page={{page}}" >
+       [
+       {% ifequal page current_page %}
+           <b>
+       {% endifequal %}
+       {{page}}
+
+       {% ifequal page current_page  %}
+           </b>
+       {% endifequal %}
+       ]
+   {% endfor %}
+   </td> </tr>
+   </table>
+   <table width=850>
+         <tr><td width = 10><input type=button value="Input"  OnClick="window.location='/InputSTLight'"></td>
+             <td>
+
+                 <p align=right><input type=submit value="변경하기"></p>
+               </form>
+               <form name=searchf method=post action="/searchZones/">
+                {% csrf_token %}
+                  <p align=right>zone: <input type=text name=searchZone size=18  maxlength=50>
+                  <input type=submit value="변경하기"></p>
+                </form>
+             </td>
+         </tr>
+     </table>
+</div>
+</div>
+
+</div>
+<!-- hidden form 시작 -->
+<form name = "tableSubmit" method = "POST">
+  {% csrf_token %}
+ <input type="hidden" name="status">
+ <input type="hidden" name="onoff">
+ <input type="hidden" name="lock">
+</form>
+
+
+
+
+<!-- hidden form 끝 -->
+<form name="frmPopup" method="POST">
+	  {% csrf_token %}
+<input type="hidden" name="polygonLat">
+<input type="hidden" name="polygonLng">
+<input type="hidden" name="polygonColor">
+</form>
+<form name="positionUpdate" method="POST">
+	  {% csrf_token %}
+<input type="hidden" name="STLLat">
+<input type="hidden" name="STLLng">
+<input type="hidden" name="markerID">
+</form>
+<form name="deletePolygon" method="POST">
+	  {% csrf_token %}
+<input type="hidden" name="zoneID">
+</form>
+<button id="delete-button">Delete Selected Shape</button>
+</body>
+</html>
+
+
+<script type="text/javascript" src="http://maps.google.com/maps/api/js??key=AIzaSyCEXAlEGffz0nDACY-PTPg3kiTFWPGyatY&libraries=drawing"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<SCRIPT type="text/javascript">
+var latlng          = new google.maps.LatLng('37.483573', '126.892567');
+var STLightControl  = false;
+var RepeaterControl = false;
+var zoneControl     = false;
+var cellControl     = false;
+var markerControl   = [true, false, false, false];
+
+//streetLight 아이콘 호출 주소 (url만 입력 가능 )따라서 google docs를 이용해서 이미지를 google drive에 저장후 해당 url을 호출
+var STLight_60_1  = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M', null, null, null, new google.maps.Size(70,60));
+var STLight_90    = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzTHIwc2RIYy1YM00', null, null, null, new google.maps.Size(70,60));
+var STLight_100   = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzek9sTEo0dHpaazg', null, null, null, new google.maps.Size(70,60));
+var STLight_0_1   = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzdTN4RmJ3QjVINFU', null, null, null, new google.maps.Size(70,60));
+var STLight_30_1  = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzdUVGRVRGMXp5dTg', null, null, null, new google.maps.Size(70,60));
+
+//rept 아이콘 호출 주소
+var rept_0        = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzWkdDT3FMTV9oYW8', null, null, null, new google.maps.Size(70,75));
+var rept_30       = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzQWJKOEZnVDd1djg', null, null, null, new google.maps.Size(70,75));
+var rept_60       = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzOFNoUzJIMU9ybEk', null, null, null, new google.maps.Size(70,75));
+var rept_90       = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzN2wxUDNwTUZ0V0k', null, null, null, new google.maps.Size(70,75));
+var rept_100      = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzTDVua1lVeGRpem8', null, null, null, new google.maps.Size(70,75));
+
+var rept_0_EOR    = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzM190TEpOOWJwWGs', null, null, null, new google.maps.Size(70,75));
+var rept_30_EOR   = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzQjRaX0ZiTURTQ2s', null, null, null, new google.maps.Size(70,75));
+var rept_60_EOR   = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzZVVYcWsyVVZSX3M', null, null, null, new google.maps.Size(70,75));
+var rept_90_EOR   = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzTnlkNmNlTG5qMkE', null, null, null, new google.maps.Size(70,75));
+var rept_100_EOR  = new google.maps.MarkerImage('https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzemRfUVM5dzdibDg', null, null, null, new google.maps.Size(70,75));
+
+
+var flag          = [];
+var infowindow    = new google.maps.InfoWindow;
+var geocoder      = new google.maps.Geocoder;
+
+//Zone의 최대 최소 사각형 영역을 위한 설정.
+//var boundary      = new Array();
+var polygons      = [];
+var rectangles    = [];
+
+//marker 위치 바꾸기 위한 변수들.
+var markerPosition;
+var markerlatlng;
+var markerID;
+
+//도형 색깔 및 기타 변경 위한 변수
+var selectedShape;
+var colors = ['#1E90FF', '#FF1493', '#32CD32', '#FF8C00', '#4B0082'];
+var selectedColor;
+var colorButtons = {};
+var drawingManager;
+var polygonLoad;
+
+
+
+//table설정 부분
+
+var tables = document.getElementById('zoneTable');
+var table = tables[tables.length - 1];
+var rows = tables.rows;
+var j =1
+var index = 2;
+{% for zones in findZone %}
+index++;
+  {% for boardRow in Location %}
+    {% if zones.zoneName == boardRow.zone.zoneName%}
+    index++;
+    tables.rows[index].cells[1].innerHTML = "<p align=center >"+j;
+    j++;
+    {%endif%}
+  {%endfor%}
+  j = 1;
+{%endfor%}
+//ContextMenu의 생성자  전달된 매개변수를 새 개의 속성으로 초기화 함.
+
+function numkeyCheck(event)
+{
+  var keyValue = event.keyCode;
+  if( ((keyValue >= 48) && (keyValue <= 57)) )
+    return true;
+  else
+    return false;
+}
+
+
+
+function ContextMenu(map, options){
+  //defualt 값으로{}를 준다
+	options = options || {};
+	this.setMap(map);
+//끝
+
+
+
+//아직은 오버레이를 지도에 연결 할 수 없다. 지도의 창은 지도에 객체가 표시되는 순서를 지정하므로,
+//모든 지도의 창이 사용 가능한지 확인해야 함. api는 이러한 상황이 발생했음을 나타내는 도우미 메서드를 제공합니다.
+
+	this.classNames_=options.classNames || {};
+	this.map_=map;
+	this.mapDiv_=map.getDiv();
+	this.menuItems_=options.menuItems || [];
+	this.pixelOffset=options.pixelOffset || new google.maps.Point(10, -5);
+  this.polygonIndex=0;
+}
+
+//dom은 document object Model로 웹페이지를 자바스크립트로 제어하기 위한 객체 모델을 의미.
+
+//prototype을 이용해 사용자 지정 오버레이 추가함
+//사용자 지정 오버레이 객체의 prototype을 지정하면 오버레이 클래스의 서브 클래스가 생성됨.
+
+ContextMenu.prototype=new google.maps.OverlayView();
+
+ContextMenu.prototype.draw=function(){
+	if(this.isVisible_){
+
+		var mapSize=new google.maps.Size(this.mapDiv_.offsetWidth, this.mapDiv_.offsetHeight);
+		var menuSize=new google.maps.Size(this.menu_.offsetWidth, this.menu_.offsetHeight);
+		var mousePosition=this.getProjection().fromLatLngToDivPixel(this.position_);
+
+// getProjection() - returns mapcanvasProjection object. OnAdd가 불리기 전에는 초기화 되지 않음
+//latlng -> pixel값으로 바꿔줌
+
+		var left=mousePosition.x;
+		var top=mousePosition.y;
+
+		if(mousePosition.x>mapSize.width-menuSize.width-this.pixelOffset.x){
+			left=left-menuSize.width-this.pixelOffset.x;
+		} else {
+			left+=this.pixelOffset.x;
+		}
+
+		if(mousePosition.y>mapSize.height-menuSize.height-this.pixelOffset.y){
+			top=top-menuSize.height-this.pixelOffset.y;
+		} else {
+			top+=this.pixelOffset.y;
+		}
+
+//menu 생성 위치 지정
+		this.menu_.style.left=left+'px';
+		this.menu_.style.top=top+'px';
+	}
+};
+
+ContextMenu.prototype.getVisible=function(){
+	return this.isVisible_;
+};
+
+ContextMenu.prototype.hide=function(){
+	if(this.isVisible_){
+		this.menu_.style.display='none';
+		this.isVisible_=false;
+  if(markerPosition)
+    markerPosition.setAnimation(null);
+	}
+};
+//onAdd 메서드를 구현, 지도에 오버레이를 연결. overlayview.onAdd()는 지도가 오버레이를 연결할 준비가 되면 호출
+ContextMenu.prototype.onAdd = function(){
+  //values 는 메뉴 아이템 항목들임. classname , eventname, label
+  function open_pop(arg1, arg2){
+      var frmObj = document.frmPopup;
+      window.open("",'popupView','width=820,height=570,top=50,left=150');
+      frmObj.action = "../createZone/";
+      frmObj.target = 'popupView'; //window,open()의 두번째 인수와 같아야 하며 필수다.
+      frmObj.polygonLat.value = arg1;
+      frmObj.polygonLng.value = arg2;
+      frmObj.polygonColor.value = selectedColor;
+      frmObj.submit();
+
+  }
+  function PositionUpdate(latlng, id){
+      var frmObj = document.positionUpdate;
+      frmObj.action = "../UpdateSTLightPos/";
+      frmObj.STLLat.value = latlng.lat();
+      frmObj.STLLng.value = latlng.lng();
+      frmObj.markerID.value = id;
+      frmObj.submit();
+
+  }
+  function deletePolygon(zoneId){
+    var frmObj = document.deletePolygon;
+    frmObj.action = "../deleteZone/";
+    frmObj.zoneID.value = zoneId;
+    frmObj.submit();
+
+  }
+	function createMenuItem(values){
+		//'div'태그 생성
+		var menuItem=document.createElement('div');
+		//div 태그 내에서 HTML을 다음으로 바꿈.
+		//values.label로 바꿈
+		menuItem.innerHTML=values.label;
+		if(values.className){
+			menuItem.className=values.className;
+		}
+		if(values.id){
+			menuItem.id=values.id;
+		}
+		menuItem.style.cssText='cursor:pointer; white-space:nowrap';
+		menuItem.onclick=function(){
+			google.maps.event.trigger($this, 'menu_item_selected', $this.position_, values.eventName);
+      //polygon event, 이벤트 리스너가 발동 안해서 직접 코딩함
+      //drawing polygon event.
+      switch(values.eventName){
+        case 'save_draw':
+          var polygonLat = [];
+          var polygonLng = [];
+          for(var i=0; i<polygons[polygonIndex].getPath().getLength();i++)
+          {
+            polygonLat[i] = polygons[polygonIndex].getPath().getAt(i).lat();
+            polygonLng[i] = polygons[polygonIndex].getPath().getAt(i).lng();
+          }
+          open_pop(polygonLat, polygonLng);
+
+            break;
+        case 'delete_draw':
+        if (selectedShape)
+        {
+            selectedShape.setMap(null);
+        }
+          break;
+        case 'changeColor_draw':
+          alert("changeColor_draw");
+          break;
+          //color bar또는 30개의 랜덤한 칼러 정하도록 하는 이벤트 발생
+        case 'save_polygon':
+          //zone 변경시 update 하기 위한 용도
+          if (selectedShape)
+          {
+            var polygonLat = [];
+            var polygonLng = [];
+            for(var i=0; i<selectedShape.getPath().getLength();i++)
+            {
+              polygonLat[i] = selectedShape.getPath().getAt(i).lat();
+              polygonLng[i] = selectedShape.getPath().getAt(i).lng();
+            }
+            open_pop(polygonLat, polygonLng);
+          }
+          break;
+        case 'delete_polygon':
+          if (selectedShape)
+          {
+              selectedShape.setMap(null);
+              deletePolygon(selectedShape.id);
+
+          }
+
+
+          break;
+          // 도형 지우는 이벤트 발생
+        case 'changeColor_polygon':
+          alert("changeColor_polygon");
+          break;
+
+
+        case 'save_position':
+          markerPosition.setPosition($this.position_);
+          //alert($this.position_);
+          PositionUpdate($this.position_, markerID);
+          //현재 위치 Lat Lng을 db로 저장 하는 이벤트 발생 시켜야됨
+          break;
+
+        case 'cancle':
+          markerPosition.setPosition(markerlatlng);
+          break;
+        case 'cancleMenu':
+          break;
+      }
+      $this.hide();
+		};
+		return menuItem;
+    //return menuItem;
+	}
+	function createMenuSeparator(){
+		var menuSeparator=document.createElement('div');
+		if($this.classNames_.menuSeparator){
+			menuSeparator.className=$this.classNames_.menuSeparator;
+		}
+		return menuSeparator;
+	}
+	var $this=this;	//	used for closures
+
+	var menu=document.createElement('div');
+	if(this.classNames_.menu){
+		menu.className=this.classNames_.menu;
+	}
+	menu.style.cssText='display:none; position:absolute';
+
+	for(var i=0, j=this.menuItems_.length; i<j; i++){
+		if(this.menuItems_[i].label && this.menuItems_[i].eventName){
+			menu.appendChild(createMenuItem(this.menuItems_[i]));
+		} else {
+			menu.appendChild(createMenuSeparator());
+		}
+	}
+
+	delete this.classNames_;
+	delete this.menuItems_;
+
+//this는 map을 의미
+	this.isVisible_=false;
+	this.menu_=menu;
+	this.position_=new google.maps.LatLng(0, 0);
+
+	google.maps.event.addListener(this.map_, 'click', function(mouseEvent){
+    //$this는 contextMenu를 의미
+    clearSelection();
+		$this.hide();
+	});
+
+	this.getPanes().floatPane.appendChild(menu);
+};
+
+ContextMenu.prototype.onRemove=function(){
+	this.menu_.parentNode.removeChild(this.menu_);
+	delete this.mapDiv_;
+	delete this.menu_;
+	delete this.position_;
+};
+ContextMenu.prototype.show=function(latLng){
+	if(!this.isVisible_){
+		this.menu_.style.display='block';
+		this.isVisible_=true;
+	}
+	this.position_=latLng;
+	this.draw();
+};
+ContextMenu.prototype.putPolygon=function(polygon, index){
+  polygonIndex = index;
+};
+ContextMenu.prototype.getMarker=function(marker, latlng, id){
+  markerlatlng = latlng;
+  markerPosition= marker;
+  markerID = id;
+};
+function ChangeSwitchAll(id)
+{
+  var butn = document.getElementById(id);
+  if(butn.value =="on")
+  {
+    butn.value = "off"
+  }
+  else
+  {
+    butn.value = "on"
+  }
+  table = document.getElementById('zoneTable');
+  for(i =3 ; i< table.rows.length; i++)
+  {
+    table.rows[i].cells[4].innerHTML = "<p align=center >"+butn.value;
+  }
+
+
+}
+function ChangeSwitch(id)
+{
+  var name = id+'hidden';
+  var butn = document.getElementById(id);
+  var butnH = document.getElementById(name);
+  if(butn.value =="on")
+  {
+    butn.value = "off"
+    butnH.value = "off"
+  }
+  else
+  {
+    butn.value = "on"
+    butnH.value = "on"
+  }
+}
+function ChangeLocked(id)
+{
+  var name = id+'hidden';
+  var butn = document.getElementById(id);
+  var butnH = document.getElementById(name);
+  if(butn.value =="O")
+  {
+    butn.value = "X"
+    butnH.value = "UnLocked"
+  }
+  else
+  {
+    butn.value = "O"
+    butnH.value = "Locked"
+  }
+}
+function CheckBoxChecked(chkbox, id)
+{
+  if(id == 'RS')
+  {
+    for(i=0; i < checkForm.chk_info.length; i++){
+      checkForm.chk_info[i].checked = false;
+    }
+    latLng = {lat: 37.483573, lng: 126.892567};
+      initMap();
+  }
+  for(i=0; i < checkForm.chk_info.length; i++) {
+		if(checkForm.chk_info[i].checked){
+      markerControl[i]=true;
+    }
+    else{
+      markerControl[i]=false;
+    }
+	}
+  initMap();
+}
+function clearSelection(){
+  if (selectedShape) {
+      if (selectedShape.type !== 'marker') {
+          selectedShape.setEditable(false);
+      }
+
+      selectedShape = null;
+  }
+}
+function setSelection (shape) {
+    if (shape.type !== 'marker') {
+        clearSelection();
+        shape.setEditable(true);
+        selectColor(shape.get('fillColor') || shape.get('strokeColor'));
+    }
+
+    selectedShape = shape;
+}
+function deleteSelectedShape () {
+    if (selectedShape) {
+        selectedShape.setMap(null);
+    }
+}
+function selectColor (color) {
+    selectedColor = color;
+    for (var i = 0; i < colors.length; ++i) {
+        var currColor = colors[i];
+        colorButtons[currColor].style.border = currColor == color ? '2px solid #789' : '2px solid #fff';
+    }
+    // Retrieves the current options from the drawing manager and replaces the
+    // stroke or fill color as appropriate.
+    var polygonOptions = drawingManager.get('polygonOptions');
+    polygonOptions.fillColor = color;
+    polygonOptions.strokeColor = color;
+    drawingManager.set('polygonOptions', polygonOptions);
+}
+function setSelectedShapeColor (color) {
+    if (selectedShape) {
+        if (selectedShape.type == google.maps.drawing.OverlayType.POLYLINE) {
+            selectedShape.set('strokeColor', color);
+        } else {
+            selectedShape.set('fillColor', color);
+            selectedShape.set('strokeColor', color);
+        }
+    }
+}
+
+function makeColorButton (color) {
+    var button = document.createElement('span');
+    button.className = 'color-button';
+    button.style.backgroundColor = color;
+    google.maps.event.addDomListener(button, 'click', function () {
+        selectColor(color);
+        setSelectedShapeColor(color);
+    });
+
+    return button;
+}
+
+function buildColorPalette () {
+    var colorPalette = document.getElementById('color-palette');
+    for (var i = 0; i < colors.length; ++i) {
+        var currColor = colors[i];
+        var colorButton = makeColorButton(currColor);
+        colorPalette.appendChild(colorButton);
+        colorButtons[currColor] = colorButton;
+    }
+    selectColor(colors[0]);
+}
+var map;
+var latLng = {lat: 37.483573, lng: 126.892567};
+function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+    center: latLng,
+    zoom: 18
+  });
+
+//color 팔렛트에서 사용되는 폴리곤 옵션
+
+
+
+  var contextMenuOptions={};
+	contextMenuOptions.classNames={menu:'context_menu', menuSeparator:'context_menu_separator'};
+
+	//	create an array of ContextMenuItem objects
+	var menuItems=[];
+	menuItems.push({className:'context_menu_item', eventName:'zoom_in_click', label:'Zoom in'});
+	menuItems.push({className:'context_menu_item', eventName:'zoom_out_click', label:'Zoom out'});
+	//	a menuItem with no properties will be rendered as a separator
+	menuItems.push({});
+	menuItems.push({className:'context_menu_item', eventName:'center_map_click', label:'Center map here'});
+	contextMenuOptions.menuItems=menuItems;
+
+
+  var drawingMenuOptions={};
+	drawingMenuOptions.classNames={menu:'context_menu', menuSeparator:'context_menu_separator'};
+
+  var drawingItems=[];
+	drawingItems.push({className:'context_menu_item', eventName:'save_draw', label:'SaveZone'});
+	drawingItems.push({className:'context_menu_item', eventName:'delete_draw', label:'DeleteZone'});
+	drawingItems.push({});
+	//drawingItems.push({className:'context_menu_item', eventName:'changeColor_draw', label:'changeColor'});
+	drawingMenuOptions.menuItems=drawingItems;
+
+  var polygonMenuOptions={};
+  polygonMenuOptions.classNames={menu:'context_menu', menuSeparator:'context_menu_separator'};
+
+  var polygonItems=[];
+  polygonItems.push({className:'context_menu_item', eventName:'save_polygon', label:'UpdateZone'});
+  polygonItems.push({className:'context_menu_item', eventName:'delete_polygon', label:'DeleteZone'});
+//  polygonItems.push({className:'context_menu_item', eventName:'changeColor_polygon', label:'changeColor'});
+  polygonItems.push({className:'context_menu_item', eventName:'cancleMenu', label:'cancle'});
+  polygonMenuOptions.menuItems=polygonItems;
+
+  var StlightMenuOptions={};
+  StlightMenuOptions.classNames={menu:'context_menu', menuSeparator:'context_menu_separator'};
+
+  var STLightItems=[];
+  STLightItems.push({className:'context_menu_item', eventName:'save_position', label:'SavePosition'});
+  STLightItems.push({className:'context_menu_item', eventName:'cancle', label:'Cancle'});
+  StlightMenuOptions.menuItems=STLightItems;
+
+	//	create the ContextMenu object
+	// ContextMenu 는 함수명이다. (위쪽에 원형 존재)
+	var contextMenu = new ContextMenu(map, contextMenuOptions);
+  var drawingMenu = new ContextMenu(map, drawingMenuOptions);
+  var polygonMenu = new ContextMenu(map, polygonMenuOptions);
+  var StlightMenu = new ContextMenu(map, StlightMenuOptions);
+
+  google.maps.event.addListener(map, 'dragend', function(mouseEvent){
+    latLng = map.getCenter();
+    //alert(map.getCenter())
+  });
+  //	display the ContextMenu on a Map right click
+  google.maps.event.addListener(map, 'rightclick', function(mouseEvent){
+		contextMenu.show(mouseEvent.latLng);
+	});
+
+  google.maps.event.addListener(contextMenu, 'menu_item_selected', function(latLng, eventName){
+    //	latLng is the position of the ContextMenu
+    //	eventName is the eventName defined for the clicked ContextMenuItem in the ContextMenuOptions
+    switch(eventName){
+      case 'zoom_in_click':
+        map.setZoom(map.getZoom()+1);
+        break;
+      case 'zoom_out_click':
+        map.setZoom(map.getZoom()-1);
+        break;
+      case 'center_map_click':
+        map.panTo(latLng);
+        break;
+    }
+  });
+  var polyOptions = {
+                      strokeWeight: 2.5,
+                      fillOpacity: 0.45,
+                      editable: true,
+                      draggable: true
+                  };
+var polygonIndex;
+  //drawing 매니저를 호출해 zone영역을 사용자가 직접 설정 할 수 있도록 도움
+    drawingManager = new google.maps.drawing.DrawingManager({
+    drawingControl: true,
+    drawingControlOptions: {
+      position: google.maps.ControlPosition.TOP_CENTER,
+      drawingModes: [
+        google.maps.drawing.OverlayType.POLYGON,
+      ]
+    }
+    ,polygonOptions: polyOptions,
+  });  drawingManager.setMap(map);
+  google.maps.event.addListener(drawingManager, 'overlaycomplete', function (e) {
+    var newShape = e.overlay;
+    drawingManager.setDrawingMode(null);
+    newShape.type = e.type;
+    setSelection(newShape);
+    google.maps.event.addListener(newShape, 'click', function (e) {
+        if (e.vertex !== undefined) {
+            if (newShape.type === google.maps.drawing.OverlayType.POLYGON) {
+                var path = newShape.getPaths().getAt(e.path);
+                path.removeAt(e.vertex);
+                if (path.length < 3) {
+                    newShape.setMap(null);
+                }
+            }
+            if (newShape.type === google.maps.drawing.OverlayType.POLYLINE) {
+                var path = newShape.getPath();
+                path.removeAt(e.vertex);
+                if (path.length < 2) {
+                    newShape.setMap(null);
+                }
+            }
+        }
+        setSelection(newShape);
+    });
+  });
+  google.maps.event.addDomListener(drawingManager, 'polygoncomplete', function(polygon) {
+    polygons.push(polygon);
+    polygons.length;
+
+    polygonIndex = polygon.zIndex;//오타 아님, 쌓임 순서
+    polygon.addListener('rightclick', DrawingMenu, polygon);
+  });
+  google.maps.event.addListener(drawingManager, 'drawingmode_changed', clearSelection);
+  google.maps.event.addDomListener(document.getElementById('delete-button'), 'click', deleteSelectedShape);
+
+  function DrawingMenu(eventName, polygon) {
+    drawingMenu.putPolygon(polygons, polygonIndex);
+    drawingMenu.show(eventName.latLng);
+  }
+
+
+  //STLight DB를 호출 하는 부분
+  if(markerControl[0] == true){
+    {% for Locations in Location %}
+              latlng = new google.maps.LatLng("{{ Locations.posX }}", "{{ Locations.posY }}");
+              //boundary=  Boundary( {{Locations.posX}}, {{Locations.posY}}, boundary );
+              //Luminous에 따라서 각기 다른 아이콘 호출
+              if("{{Locations.switch}}" == "off")
+                icons= STLight_0_1;
+              else {
+                if({{Locations.luminous}} == 0)
+                  if("{{Locations.IsRepeater}}"== "off" )
+                    icons = STLight_0_1;
+                  else
+                    icons = rept_0;
+                else if({{Locations.luminous}} <=30)
+                  if("{{Locations.IsRepeater}}" =="off" )
+                    icons = STLight_30_1;
+                  else
+                    icons = rept_30;
+                else if({{Locations.luminous}} <=60)
+                  if("{{Locations.IsRepeater}}"=="off" )
+                    icons = STLight_60_1;
+                  else
+                    icons = rept_60;
+                else if({{Locations.luminous}} <=90)
+                  if("{{Locations.IsRepeater}}"== "off" )
+                    icons = STLight_90;
+                  else
+                    icons = rept_90;
+                else if({{Locations.luminous}} <100)
+                  if("{{Locations.IsRepeater}}"== "off" )
+                    icons = STLight_100;
+                  else
+                    icons = rept_100;
+              }
+
+              //마커를 구글 맵에 입력
+              var marker = new google.maps.Marker({
+                  position: latlng,
+                  icon: icons,
+                  map: map,
+                  draggable: true,
+                  title:"{{ Locations.flag }}"
+              });
+
+              //마커 클릭시 해당 마커에 매핑되는  STLight 정보 창 오픈 함수
+              attachInfomation(marker,{{Locations.id}}, latlng);
+    {% endfor %}
+    if(markerControl[2] == true)
+    {
+      var zoneName= [];
+      var index = -1;
+      {% for i in findZone %}
+        {% for j in latLng %}
+        	{% if j.zone.zoneName == i.zoneName %}
+            if(zoneName[index] != "{{i.zoneName}}")
+            {
+              index++;
+            }
+          	zoneName[index] ="{{i.zoneName}}";
+        	{% endif %}
+        {% endfor %}
+      {% endfor %}
+      var polygonCoords = [];
+      {% for i in findZone reversed%}
+      for (var i = 0; i < index+1; i++)
+      {
+          if (zoneName[i] == "{{i.zoneName}}")
+          {
+             polygonCoords[i] =
+            [
+                {% for j in latLng %}
+                {%if j.zone.zoneName == i.zoneName%}
+                  { lat: {{j.Lat}},
+                  lng: {{j.Lng}} },
+                  {% endif %}
+                {%endfor%}
+              ];
+                polygonLoad = new google.maps.Polygon({
+                paths: polygonCoords[i],
+                id: "{{i.id}}",
+                strokeColor: "{{i.ZoneColor}}",
+                strokeOpacity: 0.8,
+                strokeWeight: 3,
+                fillColor: "{{i.ZoneColor}}",
+                fillOpacity: 0.35,
+                editable: false,
+                draggable: false
+              });
+              polygonLoad.addListener('rightclick', PolygonMenu);
+              polygonLoad.addListener('click',function (e) {
+                  setSelection(this);//this를 넣음으로써 해결됬음. polygonLoad를 넣어서는 해결이 안됨.
+              });
+
+              polygonLoad.setMap(map);
+          }
+          function PolygonMenu(eventName) {
+            polygonMenu.show(eventName.latLng);
+          }
+      }
+      {% endfor %}
+    }
+}
+if(markerControl[1] == true){
+    var path = [];
+    {% for Locations in isRept %}
+      path.push({lat: {{Locations.posX}}, lng: {{Locations.posY}}});
+    {% endfor %}
+      var reptPath = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+      });
+    reptPath.setMap(map);
+    if(markerControl[3] == true)
+    {
+      var lineSymbol = {
+        path: 'M 0,-1 0,1',
+        strokeOpacity: 1,
+        scale: 2
+      };
+
+      {% for rept in isRept %}
+        {% for nRept in isNRept %}
+          var path2 = [];
+          if("{{rept.cell.cellName}}" == "{{nRept.cell.cellName}}")
+          {
+            path2.push({lat: {{rept.posX}}, lng: {{rept.posY}}},{lat: {{nRept.posX}}, lng: {{nRept.posY}}});
+            var cellPath = new google.maps.Polyline({
+              path: path2 ,
+              strokeOpacity: 0,
+              strokeColor: '#0000FF',
+              icons: [{
+                icon: lineSymbol,
+                offset: '0',
+                repeat: '15px'
+              }]
+            });
+            cellPath.setMap(map);
+          }
+        {%endfor%}
+      {%endfor%}
+    }
+
+
+  }
+  function attachInfomation(marker, id, latlng) {
+    marker.addListener('click', function() {
+      window.open("/STLInfo/"+id,'popup','width=820,height=570,top=50,left=150');
+    });
+    /*marker.addListener('click', function() {
+      window.open("/STLInfo/"+id,'popup','width=820,height=570,top=50,left=150');
+    });*/ //잠시 이따가 코딩 할 예정
+    marker.addListener('dragend', function(eventName) {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+
+      StlightMenu.getMarker(marker, latlng, id);
+      StlightMenu.show(eventName.latLng);
+    });
+  }
+}
+initMap();
+buildColorPalette ();
+function showContextMenu(caurrentLatLng  ) {
+      var projection;
+      var contextmenuDir;
+      projection = map.getProjection() ;
+      $('.contextmenu').remove();
+          contextmenuDir = document.createElement("div");
+        contextmenuDir.className  = 'contextmenu';
+        contextmenuDir.innerHTML = "<a id='menu1'><div class=context>menu item 1<\/div><\/a><a><div class=context>menu item 2<\/div><\/a>";
+      $(map.getDiv()).append(contextmenuDir);
+
+      setMenuXY(caurrentLatLng);
+
+      contextmenuDir.style.visibility = "visible";
+     }
+
+function geocodeLatLng(geocoder, map, infowindow)
+{
+  var input = document.getElementById('latlng').value;
+  var latlngStr = input.split(',', 2);
+  var latlng = {lat: parseFloat(latlngStr[0]), lng: parseFloat(latlngStr[1])};
+  geocoder.geocode({'location': latlng}, function(results, status) {
+    if (status === google.maps.GeocoderStatus.OK) {
+      if (results[1]) {
+        map.setZoom(15);
+        var marker = new google.maps.Marker({
+          position: latlng,
+          map: map
+        });
+        infowindow.setContent(results[1].formatted_address);
+        infowindow.open(map, marker);
+      } else {
+        window.alert('No results found');
+      }
+    } else {
+      window.alert('Geocoder failed due to: ' + status);
+    }
+  });
+}
+
+function winpopupZone(zoneClicked)
+{
+  window.open("/zoneSetting",'popup','width=220,height=270,top=20,left=50');
+  return false;
+}
+function winpopupCell()
+{
+  window.open("/cellSetting",'popup','width=220,height=270,top=20,left=50');
+  return false;
+}
+</script>
+<!--<style type="text/css">
+.contextmenu{
+    visibility:hidden;
+    background:#ffffff;
+    border:1px solid #8888FF;
+    z-index: 10;
+    position: relative;
+    width: 140px;
+}
+.contextmenu div{
+    padding-left: 5px
+    }
+</style>-->
+
+<!-- Google Api key 입력 부분, Google API key는 구글 홈페이지에서 발급 받아야 함 -->

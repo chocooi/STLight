@@ -1,0 +1,36 @@
+<html>
+<head>
+<link href="../css/layout.css" rel="stylesheet">
+</head>
+<script>
+function OnClose()
+{
+	window.opener.location.reload();
+	window.close();
+}
+</script>
+<body>
+  <div class="page-header">
+    <P>
+      <h1>Zone setting</h1>
+  </div>
+<form action ="/ChangeStatus/" method="POST" name = "Zones" onsubmit="OnClose()">
+{% csrf_token %}
+
+	<div class="content container">
+	Zone:
+ {% if findZone %}
+ <select name="zoneSel" onChange="javascript:selectEvent(this)">
+  {% for  findZones in findZone %}
+   <option name="zoneSel" value={{findZones.zoneName}} selected>{{findZones.zoneName}}</option>
+  {% endfor %}
+ {% else %}
+  no zone data
+  {% endif %}
+</select>
+ 	</div>
+ luminous: <input name="status" type=text size=2 maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'><p>
+ <input type=submit value="Control Request">
+</form>
+</body>
+</html>

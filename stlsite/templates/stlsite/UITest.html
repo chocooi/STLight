@@ -1,0 +1,12 @@
+{{Lock}}<p>
+{{Status}}<p>
+{{Switch}}<p>
+
+{%for s in Org%}
+  id: {{s.id}} switch:
+  {{s.switch}}  luminous:
+  {{s.luminous}}
+  lcok: {{s.ltAuto}}<p>
+{% endfor %}
+
+hi

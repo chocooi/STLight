@@ -1,0 +1,52 @@
+{% load staticfiles %}
+<html>
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+    <head>
+        <title>Input Repeater</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link href='//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="{% static 'css/blog.css' %}">
+
+		<script type="text/javascript">
+        function goReplace(str) {
+          location.replace(str);
+        }
+    </script>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1><a href="/">Input Repeater</a></h1>
+        </div>
+      <form action ="/SetRepeater/" method="POST">
+  {% csrf_token %}
+      <div class="content container">
+			<div>
+			 pos X:<input type="textbox" value="37.616573" name="re_posX">
+			 <div>
+ 			 pos Y: <input type="textbox" value="127.145068" name="re_posY">
+       <div>
+ 			 RouteTable: <input type="textbox" value="Route1" name="RouteTable">
+       <div>
+ 			 location: <input type="textbox" value="seoul" name="re_loc">
+       <div>
+       EOR: <input type="textbox" value="1" name="EOR">
+       <div>
+       code: <input type="textbox" value="0201" name="re_code">
+       <div>
+       cell: <input type="textbox" value="default" name="cell">
+       <div>
+			 <input type = "submit" value = "input" >
+      </div>
+    </div>
+     </div> </div></div></div>
+			 </div>
+       </div>
+       </div>
+     </form>
+
+
+
+
+    </body>
+</html>

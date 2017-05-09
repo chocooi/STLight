@@ -1,0 +1,146 @@
+<html>
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+    <head>
+		<script type="text/javascript">
+        function goReplace(str) {
+          location.replace(str);
+        }
+        function IsInside(vertexX, vertexY)
+        {
+          var crosses = 0;
+          var iscrossed = false;
+          {% load index_extras %} // custom filter 호출
+          {% for i in lat %}
+            {% for j in lng %}
+              if({{forloop.counter0}} == {{forloop.parentloop.counter0}})
+              {
+                if( {{forloop.counter0}} == 0){
+                  if(({{j}} > vertexY) != ({{lng|index:forloop.counter0}}> vertexY))
+                  {
+                    var atX = ( {{lat|index:forloop.parentloop.counter0}} - {{i}} ) * (vertexY - {{j}}) / ({{lng|index:forloop.parentloop.counter0}} - {{j}} ) + {{i}};
+                    if(vertexX < atX)
+                      crosses++;
+                  }
+                }
+                else {
+                  if(({{lng|index:forloop.counter0}} > vertexY) != ({{j}}> vertexY))
+                  {
+                    var atX = ({{i}} - {{lat|index:forloop.parentloop.counter0}} ) * (vertexY - {{lng|index:forloop.parentloop.counter0}}) / ({{j}} - {{lng|index:forloop.parentloop.counter0}} ) + {{lat|index:forloop.parentloop.counter0}};
+                    if(vertexX < atX)
+                      crosses++;
+                  }
+                }
+              }
+          {% endfor %}
+          {% endfor %}
+          if( crosses %2 ==1)
+          {
+            return true;
+          }
+
+
+        }
+        function CloseWindow(){
+          this.close();
+        }
+				function checkZone() {
+	        var sZone = document.chkzoneForm.ZoneName.value;
+          var isZone = false;
+          var checkSTL =[];
+					if(sZone == "")
+						alert("입력된 값이 없습니다.");
+					else {
+						{% if findZone %}
+              {% for z in findZone %}
+               if(sZone == "{{z.zoneName}}")
+                isZone = true;
+              {% endfor %}
+            {% endif %}
+
+						document.getElementById("submitZone").disabled  = true; //disable 설정
+            {% if strl %}
+              {% for stl in strl %}
+                if(IsInside({{stl.posX}}, {{stl.posY}}) == true){
+                  checkSTL[{{forloop.counter0}}] = true;
+                }
+              {% endfor %}
+            {% endif %}
+
+            if(isZone == false){
+              alert("중복된 이름이 없습니다.");
+              var stlId = [];
+              var index = 0;
+              var HTML = "<table cellspacing=1 width=700 border=1 id='zoneTable'>";
+                  HTML += "<TR bgcolor =orange width=700><td width=50><p align=center>NO</p></td> <td width=100><p align=center>Device Code</p></td> <td width=200><p align=center>현재 Zone</p></td><td width=200><p align=center>변경될 Zone</p></td><td width=100><p align=center>색상</p></td></tr></table>";
+              {% for stl in strl %}
+                if(checkSTL[{{forloop.counter0}}] == true){
+                  var zoneTable= document.getElementById("zoneTable");
+                  HTML += "<tr><td width=50><p align=center>{{ stl.id }}</p></td>";
+   							  HTML += "<td width=100><p align=center>{{ stl.code }}</p></td>";
+                  HTML += "<td width=250><p align=center>{{ stl.loc }}</p></td>";
+                  HTML += "<td width=250 ><p align=center style=color:red>";
+                  HTML += sZone;
+   							  HTML +="</p></td>";
+                  HTML += "<td width=100 ><p align=center style=color:red>{{polygonColor}}</p></td></tr>";
+                  stlId[index] = {{stl.id}};
+                  index++;
+                  zoneTable.innerHTML = HTML;
+      						document.getElementById("submitZone").disabled  = false; //disable 해제
+                }
+              {% endfor %}
+              var frmObj = document.submitValue;
+              frmObj.polygonLat.value = "{{lat}}";
+              frmObj.polygonLng.value = "{{lng}}";
+              frmObj.STLId.value = stlId;
+              frmObj.ZoneName.value = sZone;
+              frmObj.zoneColor.value = "{{polygonColor}}";
+            }
+            else
+              alert("Zone 이름이 중복됩니다.");
+					}
+        }
+    </script>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1 align=center>Create Zone Area</h1>
+        </div>
+      <form name= "chkzoneForm" action ="//" method="POST">
+        {% csrf_token %}
+      <div class="content container">
+			<div>
+			 <h4>Zone Name:<input type="textbox" value="" name="ZoneName">
+         <input type="hidden" value ="" name="zoneColor">
+				<input type="button" value="중복체크"  onclick="javascript:checkZone()"></input>
+      </form>
+        </h4>
+			 <div>
+			  <p><p>
+			 <div>
+           <br><br>
+      <form name= "submitValue" action ="/saveZone/" method="POST">
+        {% csrf_token %}
+				 <h2>영역에 포함된 가로등</h2>
+				 <table cellspacing=1 width=700 border=1 id="zoneTable">
+				  <TR bgcolor =orange width=700>
+					 <td width=50><p align=center>NO</p></td>
+					 <td width=100><p align=center>Device Code</p></td>
+					 <td width=200><p align=center>현재 Zone</p></td>
+					 <td width=200><p align=center>변경될 Zone</p></td>
+           <td width=100><p align=center>색상</p></td>
+				 </tr>
+				 </table>
+				 <br>
+				 <div>
+           <input type="hidden" name="polygonLat">
+           <input type="hidden" name="polygonLng">
+           <input type="hidden" name="STLId">
+           <input type="hidden" name="ZoneName">
+           <input type="hidden" name="zoneColor">
+			 <input type = "submit" value = "저장하기" disabled='enabled' id= 'submitZone' >
+       <input type= "button" align = "center" value = "Close"  onclick = "CloseWindow()" ></input>
+      </div>
+    </div> </div> </div>
+     </form>
+    </body>
+</html>

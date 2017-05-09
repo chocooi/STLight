@@ -1,0 +1,65 @@
+{% load staticfiles %}
+<html>
+<link rel="icon" type="image/png" href="https://docs.google.com/uc?export=download&id=0ByKVQAUvgcIzMU1zTjFzbGZYN2M" sizes="16x16" />
+    <head>
+        <title>Input STLight</title>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <script>
+
+        function check()
+        {
+          if(fr.code.value == "")
+          {
+            alert("code 값을 입력해 주세요.");
+            fr.code.focus();
+            return false;
+          }
+          else if(fr.cell.value == "")
+          {
+            alert("Cell 이름을 입력해 주세요.");
+            fr.code.focus();
+            return false;
+          }
+          else return true;
+        }
+        </script>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1>Input STLight</h1>
+        </div>
+      <form action ="/STLight/" method="POST" name="fr" onsubmit="return check()">
+  {% csrf_token %}
+      <div class="content container">
+			<div>
+			 pos X:<input type="textbox" value="37.616573" name="posX">
+			 <div>
+ 			 pos Y: <input type="textbox" value="127.145068" name="posY">
+			 <div>
+ 			 flag: <input type="textbox" value="input100" name="flag">
+       <div>
+ 			 luminous: <input type="textbox" value="30" name="luminous">
+       <div>
+ 			 location: <input type="textbox" value="seoul" name="location">
+       <div>
+       STlightAuto: <input type="textbox" value="UnLocked" name="ltAuto">
+       <div>
+       code: <input type="textbox" name= "code">
+      <div>
+        zone: <input type="textbox" value="default" name="zone">
+      <div>
+        cell: <input type="textbox" name="cell">
+     <div>
+			 <input type = "submit" value = "input">
+     </div>
+    </div>
+     </div> </div></div></div>
+			 </div>
+       </div>
+       </div>
+ 			 </div>
+ 			 </div>
+     </form>
+  </body>
+</html>
