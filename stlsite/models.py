@@ -6,11 +6,17 @@ class Member(models.Model):
     memID = models.CharField(max_length = 100)
     memPW = models.CharField(max_length = 100)
 
+class ipPort(models.Model):
+    ip= models.IntegerField(null=False, default = '192.168.10.21')
+    port = models.IntegerField(null=False, default = '2000')
+
+
 class Order(models.Model):
     commendCode = models.CharField(max_length = 100)
-    transmitTime = models.DateTimeField(blank=True, default = 0)
-    receiveTime = models.DateTimeField(blank=True, default = 0)
-    contents = models.CharField(max_length = 100)
+    #transmitTime = models.DateTimeField(blank=True, default = 0)
+    #receiveTime = models.DateTimeField(blank=True, default = 0)
+    #contents = models.CharField(max_length = 100)
+    commendNum = models.CharField(null=False, max_length = 100, default = '1')
 
 class Zone(models.Model):
     zoneName = models.CharField(max_length=40, null=False, default = 'default')

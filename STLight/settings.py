@@ -25,7 +25,7 @@ SECRET_KEY = '5f5q8=p!&)-=)5%lfgm^q89wmro&*z6n3p@-@r1t_wd-ikj7c2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.10.21','121.140.91.253', '127.0.0.1']
 
 
 # Application definition
@@ -38,12 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'stlsite',
-    'channels',
     'rest_framework',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
     ],
     'PAGE_SIZE': 10
 }
@@ -108,12 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'asgiref.inmemory.ChannelLayer',
-        'ROUTING': 'django_channels.routing.channel_routing',
-    },
-}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 

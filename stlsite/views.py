@@ -7,11 +7,13 @@ from haikunator import Haikunator
 import datetime
 import random
 import string
+import socket
+import subprocess
 from socket import *
 from django.contrib.auth.models import User, Group
 from .models import StreetLight, Zone
 from rest_framework import viewsets
-from .serializers import UserSerializer, GroupSerializer, StreetLightSerializer,ZoneSerializer
+from .serializers import UserSerializer, GroupSerializer, StreetLightSerializer,ZoneSerializer,OrderSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,6 +25,11 @@ class UserViewSet(viewsets.ModelViewSet):
 class LuminousViewSet(viewsets.ModelViewSet):
     queryset = StreetLight.objects.all()
     serializer_class = StreetLightSerializer
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset =Order.objects.all()
+    serializer_class = OrderSerializer
+
 class STLightViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
@@ -304,7 +311,10 @@ def CommandHistory(request):
     return render(request, 'stlsite/uitest.html',{'test': posX, 'zone': zone, 'latLng' : latLng})
 
 def Monitoring(request):
-    findzone = Zone.objects.all
+    findzone = StreetLight.objects.all().count()
+
+
+
     return render(request, 'stlsite/Monitoring.html', {'findZone': findzone})
 
 def about(request):
@@ -374,16 +384,67 @@ def demoScreen(request):
             return render(request, 'stlsite/demoScreen.html', {'findZone': zone,'Location': strl, 'RepeaterVal': rept, 'latLng': latLng, 'isRept' : isrept, 'isNRept' : isNrept,'Cell':cell})
         else:
             return render(request, 'stlsite/demoScreen.html')
+def demoScreenMobile(request):
+    if request.method == 'POST':
+        posX = request.POST.get("posX")
+        posY = request.POST.get("posY")
+        flag = request.POST.get("flag") #가로등 마우스 오버 시 나오는 글씨 설정
+        luminous = request.POST.get("luminous") #조도
+        loc = request.POST.get("location")  #위치, geocoder
+        code = request.POST.get("code") #가로등 고유 코드
+        ltAuto =  request.POST.get("ltAuto") # 자동 조도 동작 여부
+        zone = request.POST.get("zone")
+        cell = request.POST.get("cell")
+
+        LocationX = StreetLight.objects.filter(posX = posX)
+        CheckZone = Zone.objects.filter(zoneName = zone)
+        CheckCell = Cell.objects.filter(cellName = cell)
+
+        #해당 Zone, Cell Data가 없을 경우 DB생성
+        if not CheckZone:
+            Zone.objects.create(zoneName = zone)
+        if not CheckCell:
+            Cell.objects.create(cellName = cell)
+
+
+        # 중복체크 x, y좌표가 중복 될시 db생성 제외
+        if LocationX:
+            LocationY = StreetLight.objects.filter(posY = posY)
+            if not LocationY:
+                StreetLight.objects.create(posX = posX, posY = posY, flag = flag, luminous = luminous, loc = loc, code = code, ltAuto = ltAuto,  zone = Zone.objects.get(zoneName = zone), cell = Cell.objects.get(cellName = cell))
+        else:
+            StreetLight.objects.create(posX = posX, posY = posY, flag = flag, luminous = luminous, loc = loc, code = code, ltAuto = ltAuto, zone = Zone.objects.get(zoneName = zone), cell = Cell.objects.get(cellName = cell))
+        #form 호출
+        format_ = NameForm()
+        format_search = SearchForm()
+        strl = StreetLight.objects.all()
+        zone = Zone.objects.all()
+        latLng = LatLng.objects.all()
+        return render(request, 'stlsite/demoScreenMobile.html', {'findZone': zone, 'latLng': latLng ,'posX': posX, 'posY': posY,'flag': flag , 'Location':strl, 'format' : format_, 'code' : code, 'ltAuto' : ltAuto, 'Zone' : zone,'format_search': format_search})
+    else:
+        format_ = NameForm()
+        format_search = SearchForm()
+        strl = StreetLight.objects.all()
+        zone = Zone.objects.all()
+        latLng = LatLng.objects.all()
+        rept =Repeater.objects.all()
+        cell = Cell.objects.all()
+        isrept = StreetLight.objects.filter(IsRepeater = "on")
+        isNrept = StreetLight.objects.filter(IsRepeater = "off")
+        if strl:
+            return render(request, 'stlsite/demoScreenMobile.html', {'findZone': zone,'Location': strl, 'RepeaterVal': rept, 'latLng': latLng, 'isRept' : isrept, 'isNRept' : isNrept,'Cell':cell})
+        else:
+            return render(request, 'stlsite/demoScreenMobile.html')
+
 def changeTable(request):
 
     lock = request.POST.getlist("lock")
-
     switch = request.POST.getlist("switch")
     status = request.POST.getlist("status")
     zones = Zone.objects.all()
     strls = StreetLight.objects.all()
-    index=1
-    index2=0
+    index = 1
+    index2 = 0
     for zone in zones:
         index+=1
         for strl in strls:
@@ -391,8 +452,8 @@ def changeTable(request):
                 StreetLight.objects.filter(id = strl.id).update(switch = switch[index])
                 StreetLight.objects.filter(id = strl.id).update(luminous = status[index])
                 StreetLight.objects.filter(id = strl.id).update(ltAuto = lock[index2])
-                index+=1
-                index2 +=1
+                index  += 1
+                index2 += 1
     strl = StreetLight.objects.all()
     zone = Zone.objects.all()
     latLng = LatLng.objects.all()
@@ -400,5 +461,33 @@ def changeTable(request):
     cell = Cell.objects.all()
     isrept = StreetLight.objects.filter(IsRepeater = "on")
     isNrept = StreetLight.objects.filter(IsRepeater = "off")
-    #return render(request, 'stlsite/uitest.html',{'Lock': lock,'Switch': switch,'Status': status, 'Org': strls, 'ff': index2})
+
+    HOST = '192.168.10.49'
+    PORT = 2000
+    #client_sock=socket(AF_INET,SOCK_STREAM, 0)
+    #client_sock.connect((HOST, PORT))
+
+    stlight_Count =StreetLight.objects.all().count()
+    msg = ""
+    for light in strl:
+        msg += "0x10x112233440x1111"#default
+        msg += light.code
+        msg += "0x00000000"#reserved
+        if (light.switch == "off"):
+            msg += "0x0"#status
+        else:
+            msg += "0x1"
+    ms_count =str(stlight_Count)
+    msg.encode(encoding = 'utf-8', errors='strict')
+    commend = Order.objects.all()
+    if not commend:
+        Order.objects.create(commendCode = msg, commendNum = ms_count)
+    else:
+        Order.objects.filter(id = '1').update(commendCode = msg, commendNum = ms_count)
+
+    #client_sock.send(ms_count.encode(encoding = 'utf-8', errors='strict'))
+    #data=client_sock.recv(1024)
+    #client_sock.send(msg.encode(encoding = 'utf-8', errors='strict'))
+    #client_sock.close()
+
     return render(request, 'stlsite/demoScreen.html', {'findZone': zone,'Location': strl, 'RepeaterVal': rept, 'latLng': latLng, 'isRept' : isrept, 'isNRept' : isNrept,'Cell':cell})

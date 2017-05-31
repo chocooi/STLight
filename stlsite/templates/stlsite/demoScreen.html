@@ -15,7 +15,7 @@
 #Menu  { background-color:#708877; float:left; width:900px; height:100px; }
 #Menu2  { background-color:#004422; float:left; width:800px; height:50px; }
 #sideinfo  { background-color:#DCDAD9; float:right; width:900px; height:400px; }
-#footer   { background-color:#555555; clear:both; height:100px; }
+#footer   { background-color:#666666; clear:both; height:100px; }
 #map{
   height:100%;
 }
@@ -100,7 +100,7 @@
 </div>
 
 <div id="content">
-      <p><h2>StreetLight Table</h2>
+      <p ><h2 align=center>StreetLight Table</h2>
 
    <div id="table">
 
@@ -108,62 +108,59 @@
    <tr>
      <form name=searchf method=post action="/changeTable/">
        {% csrf_token %}
-     <td width=100 rowspan="2"><p align=center>Zone</p></td>
+     <td width=70 rowspan="2"><p align=center>Zone</p></td>
      <td width=80 colspan = "2" ><p align=center>Lighter</p></td>
-     <td width=100 rowspan="2" ><p align=center>Status(%)</p></td>
-     <td width=100 rowspan="2"><p align=center>on/off</p></td>
+     <td width=100 rowspan="2"><p align=center>Brightness</p></td>
+     <td width=100  colspan = "2" ><p align=center>on/off</p></td>
      <td width=50 rowspan="2"><p align=center>Lock</p></td>
-     <td width=300 colspan = "2"><p align=center>Location</p></td>
      <td width=100 colspan = "2"><p align=center>AP</p></td>
    </tr>
     <tr>
    <td width=40 ><p align=center>No</p></td>
    <td width=40 ><p align=center>ID</p></td>
-   <td width=150 ><p align=center>X (latitude)</p></td>
-   <td width=150 ><p align=center>Y (longitude)</p></td>
+   <td width=40 ><p align=center>%</p></td>
+   <td width=40 ><p align=center>Control</p></td>
    <td width=50 ><p align=center>Name</p></td>
    <td width=50 ><p align=center>Status</p></td>
     </tr>
-    <tr bgcolor="#999">
+    <tr bgcolor="#666">
       <td width=100 ><p align=center>All</p></td>
       <td width=50 ><p align=center></p></td>
       <td width=100 ><p align=center></p></td>
-      <td width=50 ><p align=center><input style="background-color: #999; border:#999; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return numkeyCheck(event)'></p></td>
-      <td width=50 ><p align=center><input style="background-color: #999; border:#999; text-align: center; font-size:12pt" name="switch" type="button" id=-9 onclick = "ChangeSwitchAll(-9)" value="on">
-      <input name="switch" type="hidden" id=-9hidden value="on"></p></td></p></td>
+      <td width=70 ><p align=center><input style="background-color: #666; border:#999; text-align: center; font-size:12pt" name="status" type=range size=5 value = 100  ></p></td>
+      <td width=30 ><p align=center><input style="background-color: #666; border:#999; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return numkeyCheck(event)'></p></td>
+      <td width=50 ><p align=center><input style="background-color: #666; border:#999; text-align: center; font-size:12pt" name="switch" type="button" id=-9 onclick = "ChangeSwitchAll(-9)" value="on">
+      <input name="switch" type="hidden" id=-9 hidden value="on"></p></td></p></td>
       <td width=50 ><p align=center></p></td>
-      <td width=50 ><p align=center></p></td>
-      <td width=50 ><p align=center></p></td>
+
       <td width=50 ><p align=center></p></td>
       <td width=50 ><p align=center></p></td>
     </tr>
 
        {% if Location %}
        {% for zones in findZone %}
-          <tr bgcolor="#ddd">
+          <tr bgcolor="#bbb">
             <td width=70><p align=center>{{zones.zoneName}}</p></td>
             <td width=45><p align=center>0</p></td>
             <td width=50><p align=center></p></td>
-            <td width=70><p align=center><input style="background-color: #ddd; border:#ddd; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
-            <td width=50><p align=center><input style="background-color: #ddd; border:#ddd; text-align: center; font-size:12pt" type="button" id={{zones.zoneName}} onclick = "ChangeSwitch('{{zones.zoneName}}')" value="on">
+            <td width=70><p align=center><input style="background-color: #bbb; border:#ddd; text-align: center; font-size:12pt" name="status" type=range size=5 value = 100 onchange = "changeTextAll(this.value)"></p></td>
+            <td width=30><p align=center><input style="background-color: #bbb; border:#ddd; text-align: center; font-size:12pt" name="status" type=text size=5 value = 100 maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
+            <td width=50><p align=center><input style="background-color: #bbb; border:#ddd; text-align: center; font-size:12pt" type="button" id={{zones.zoneName}} onclick = "ChangeSwitchZone('{{zones.zoneName}}')" value="on">
             <input name="switch" type="hidden" id={{zones.zoneName}}hidden value="on"></p></td>
              <td width=40><p align=center></p></td>
-            <td width=120><p align=center></p></td>
-            <td width=120><p align=center></p></td>
             <td width=45><p align=center></p></td>
             <td width=45><p align=center></p></td>
           </tr>
          {% for boardRow in Location %}
-
          {% if zones.zoneName == boardRow.zone.zoneName%}
            <tr>
              <td width=100 style="background-color: #fff;"><p align=center></p></td>
              <td width=40 style="background-color: #fff;"><p align=center>{{total}}</p></td>
              <td width=100 style="background-color: #fff;"><p align=center>{{ boardRow.code }}</p></td>
-             <td width=100 style="background-color: #fff;" ><p align=center><input style="background-color: #fff; border:#fff; text-align: center; font-size:12pt" name="status" type=text size=5 value = {{ boardRow.luminous }} maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
-
+             <td width=70 style="background-color: #fff;" ><p align=center><input style="background-color: #fff; border:#fff; text-align: center; font-size:12pt" name="status" type=range size=5 value = {{ boardRow.luminous }} ></p></td>
+             <td width=30 style="background-color: #fff;" ><p align=center><input style="background-color: #fff; border:#fff; text-align: center; font-size:12pt" name="status" type=text size=5 value = {{ boardRow.luminous }} maxlength=2 onkeypress='return event.charCode >= 48 && event.charCode <= 57'></p></td>
              <td width=50 style="background-color: #fff;"><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="switch" type="button" id={{boardRow.id}} onclick = "ChangeSwitch({{boardRow.id}})" value={{boardRow.switch}}>
-             <input name="switch" type="hidden" id={{boardRow.id}}hidden value="on"></p></td></p></td>
+             <input name="switch" type="hidden" id={{boardRow.id}}hidden value={{boardRow.switch}}></p></td></p></td>
              {% if boardRow.ltAuto == "Locked" %}
               <td width=50 style="background-color: #fff;"><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="lock" type="button" id={{boardRow.id}}+{{boardRow.ltAuto}} onclick = "ChangeLocked('{{boardRow.id}}+{{boardRow.ltAuto}}')" value="O">
               <input name="lock" type="hidden" id={{boardRow.id}}+{{boardRow.ltAuto}}hidden value={{boardRow.ltAuto}}></p></td>
@@ -171,10 +168,9 @@
               <td width=50 style="background-color: #fff;"><p align=center><p align=center><input style="background-color: #fff;border:#fff;text-align: center; font-size:12pt" name="lock" type="button" id={{boardRow.id}}+{{boardRow.ltAuto}} onclick = "ChangeLocked('{{boardRow.id}}+{{boardRow.ltAuto}}')" value="X">
               <input name="lock" type="hidden" id={{boardRow.id}}+{{boardRow.ltAuto}}hidden value={{boardRow.ltAuto}}></p></td></p></td>
              {% endif %}
-             <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.posX }}</p></td>
-             <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.posY }}</p></td>
+
              <td width=50 style="background-color: #fff;"><p align=center>{{ boardRow.cell.cellName }}</p></td>
-             <td width=50 style="background-color: #fff;"><p align=center>Right</p></td>
+             <td width=50 style="background-color: #fff;"><p align=center>Ok</p></td>
            </tr>
 
         {% endif %}
@@ -212,16 +208,12 @@
    </td> </tr>
    </table>
    <table width=850>
-         <tr><td width = 10><input type=button value="Input"  OnClick="window.location='/InputSTLight'"></td>
+         <tr><td width = 10><input type=button value="가로등입력"  OnClick="window.location='/InputSTLight'"></td>
              <td>
 
                  <p align=right><input type=submit value="변경하기"></p>
                </form>
-               <form name=searchf method=post action="/searchZones/">
-                {% csrf_token %}
-                  <p align=right>zone: <input type=text name=searchZone size=18  maxlength=50>
-                  <input type=submit value="변경하기"></p>
-                </form>
+
              </td>
          </tr>
      </table>
@@ -596,24 +588,81 @@ ContextMenu.prototype.getMarker=function(marker, latlng, id){
   markerPosition= marker;
   markerID = id;
 };
+function changeTextAll(value)
+{
+
+}
 function ChangeSwitchAll(id)
 {
   var butn = document.getElementById(id);
   if(butn.value =="on")
   {
     butn.value = "off"
+    {% for boardRow in Location %}
+     var butn_stlight = document.getElementById("{{boardRow.id}}");
+     var butnH_stlight = document.getElementById("{{boardRow.id}}hidden");
+     if ("{{boardRow.ltAuto}}" != "Locked")
+     {
+       butn_stlight.value = "off"
+       butnH_stlight.value = "off"
+     }
+
+    {% endfor %}
   }
   else
   {
     butn.value = "on"
+    {% for boardRow in Location %}
+    var butn_stlight = document.getElementById("{{boardRow.id}}");
+    var butnH_stlight = document.getElementById("{{boardRow.id}}hidden");
+    if ("{{boardRow.ltAuto}}" != "Locked")
+    {
+      butn_stlight.value = "on"
+      butnH_stlight.value = "on"
+    }
+
+    {% endfor %}
   }
-  table = document.getElementById('zoneTable');
-  for(i =3 ; i< table.rows.length; i++)
+}
+function ChangeSwitchZone(id)
+{
+  var name = id+'hidden';
+  var butn = document.getElementById(id);
+  var butnH = document.getElementById(name);
+  if(butn.value =="on")
   {
-    table.rows[i].cells[4].innerHTML = "<p align=center >"+butn.value;
+    butn.value = "off"
+    butnH.value = "off"
+    {% for boardRow in Location %}
+    if (id =="{{boardRow.zone.zoneName}}")
+    {
+      if ("{{boardRow.ltAuto}}" != "Locked")
+      {
+        var butn_stlight = document.getElementById("{{boardRow.id}}");
+        var butnH_stlight = document.getElementById("{{boardRow.id}}hidden");
+        butn_stlight.value = "off"
+        butnH_stlight.value = "off"
+      }
+    }
+      {% endfor %}
   }
-
-
+  else
+  {
+    butn.value = "on"
+    butnH.value = "on"
+    {% for boardRow in Location %}
+      if (id =="{{boardRow.zone.zoneName}}")
+      {
+        if ("{{boardRow.ltAuto}}" != "Locked")
+        {
+          var butn_stlight = document.getElementById("{{boardRow.id}}");
+          var butnH_stlight = document.getElementById("{{boardRow.id}}hidden");
+          butn_stlight.value = "on"
+          butnH_stlight.value = "on"
+        }
+      }
+      {% endfor %}
+  }
 }
 function ChangeSwitch(id)
 {
@@ -654,7 +703,7 @@ function CheckBoxChecked(chkbox, id)
     for(i=0; i < checkForm.chk_info.length; i++){
       checkForm.chk_info[i].checked = false;
     }
-    latLng = {lat: 37.483573, lng: 126.892567};
+    latLng = {lat: 37.46623, lng: 126.887167};
       initMap();
   }
   for(i=0; i < checkForm.chk_info.length; i++) {
@@ -737,7 +786,7 @@ function buildColorPalette () {
     selectColor(colors[0]);
 }
 var map;
-var latLng = {lat: 37.483573, lng: 126.892567};
+var latLng = {lat: 37.46623, lng: 126.887167};
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
     center: latLng,
@@ -908,7 +957,7 @@ var polygonIndex;
                     icons = STLight_90;
                   else
                     icons = rept_90;
-                else if({{Locations.luminous}} <100)
+                else if({{Locations.luminous}} <=100)
                   if("{{Locations.IsRepeater}}"== "off" )
                     icons = STLight_100;
                   else
@@ -925,7 +974,7 @@ var polygonIndex;
               });
 
               //마커 클릭시 해당 마커에 매핑되는  STLight 정보 창 오픈 함수
-              attachInfomation(marker,{{Locations.id}}, latlng);
+              //attachInfomation(marker,{{Locations.id}}, latlng);
     {% endfor %}
     if(markerControl[2] == true)
     {

@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User, Group
-from .models import StreetLight, Zone
+from .models import StreetLight, Zone, Order
 from rest_framework import serializers
 
 
@@ -25,3 +25,8 @@ class ZoneSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Zone
         fields = ('id', 'zoneName' )
+
+class OrderSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('commendCode', 'commendNum' )

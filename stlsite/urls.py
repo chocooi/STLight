@@ -8,6 +8,7 @@ router.register(r'groups', views.GroupViewSet)
 router.register(r'stlight', views.STLightViewSet)
 router.register(r'Zone', views.ZoneViewSet)
 router.register(r'Luminous', views.LuminousViewSet)
+router.register(r'commend', views.OrderViewSet)
 
 
 urlpatterns = [
@@ -31,6 +32,7 @@ urlpatterns = [
     url(r'^demoScreen/$', views.demoScreen, name='demoScreen'),
     url(r'^changeTable/$', views.changeTable, name='changeTable'),
     url(r'^searchZones/$', views.searchZones, name='searchZone'),
+    url(r'^demoScreenMobile/$', views.demoScreenMobile, name='demoScreenMobile'),
 
 
     url(r'^', include(router.urls)),
